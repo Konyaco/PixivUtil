@@ -1,7 +1,6 @@
 package com.atwzj.pixivlib.features
 
 import com.atwzj.pixivlib.engine.Engine
-import com.atwzj.pixivlib.engine.Pixiv
 import org.jsoup.Jsoup
 
 internal class RankImpl(

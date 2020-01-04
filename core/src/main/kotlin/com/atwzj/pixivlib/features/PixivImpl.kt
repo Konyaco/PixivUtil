@@ -2,7 +2,7 @@ package com.atwzj.pixivlib.features
 
 import com.atwzj.pixivlib.engine.*
 
-internal class PixivImpl(private val engine: Engine) : com.atwzj.pixivlib.engine.Pixiv {
+internal class PixivImpl(private val engine: Engine) : Pixiv {
     override suspend fun getRank(rankMode: String): Rank {
         return RankImpl(this, engine, rankMode)
     }

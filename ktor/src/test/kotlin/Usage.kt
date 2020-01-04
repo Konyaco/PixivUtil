@@ -1,13 +1,16 @@
 package com.atwzj.pixivlib.jvm
 
 import com.atwzj.pixivlib.Pixiv
+import com.atwzj.pixivlib.ktor.Ktor
+import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.async
 
+@KtorExperimentalAPI
 fun main() = runBlocking<Unit> {
-    val pixiv = Pixiv<JVM>()
+    val pixiv = Pixiv<Ktor>()
     val job = GlobalScope.launch {
         println("Getting daily rank..")
         val rank = pixiv.getRank("daily")
