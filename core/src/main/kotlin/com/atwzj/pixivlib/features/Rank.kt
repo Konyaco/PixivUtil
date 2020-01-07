@@ -1,18 +1,12 @@
 package com.atwzj.pixivlib.features
 
+import com.atwzj.pixivlib.exception.PixivException
+
+/**
+ * @throws Throws [PixivException] on failure.
+ */
 interface Rank : Iterable<Artwork> {
-    /**
-     * @throws [InterruptedException]
-     */
     suspend fun getArtworkCount(): Int
-
-    /**
-     * @throws [InterruptedException]
-     */
     suspend fun getArtwork(rankIndex: Int): Artwork
-
-    /**
-     * @throws [InterruptedException]
-     */
     suspend fun getArtworks(): List<Artwork>
 }

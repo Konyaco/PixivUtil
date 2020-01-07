@@ -1,12 +1,13 @@
 package com.atwzj.pixivlib.features
 
 import com.atwzj.pixivlib.engine.Engine
+import com.atwzj.pixivlib.exception.PixivException
 import org.jsoup.Jsoup
 
 internal class RankImpl(
     private val pixiv: Pixiv,
     private val engine: Engine,
-    private val rankMode: String
+    private val rankMode: RankMode
 ) : Rank {
     private var parsed = false
 
@@ -24,12 +25,11 @@ internal class RankImpl(
     }
 
     /**
-     * @throws InterruptedException
+     * @throws [PixivException]
      */
     private suspend fun parseInfo() {
-        val response: String = engine.httpGet("https://www.pixiv.net/ranking.php?mode=$rankMode")
-
         try {
+            val response: String = engine.httpGet("https://www.pixiv.net/ranking.php?mode=${rankMode.modeName}")
             val body = response.substringAfter("<body>").substringBefore("</body>")
             Jsoup.parse(body)
                 .getElementsByClass("ranking-item")
@@ -38,8 +38,8 @@ internal class RankImpl(
                     artworks.add(pixiv.getArtwork(id))
                 }
         } catch (e: Exception) {
-            e.printStackTrace()
-            throw InterruptedException("Parsing rank failed: $e")
+//            e.printStackTrace()
+            throw PixivException("Failed to get the rank", e)
         }
     }
 

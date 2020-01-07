@@ -24,8 +24,3 @@ allprojects {
         }
     }
 }
-
-tasks {
-    build {
-    }
-}

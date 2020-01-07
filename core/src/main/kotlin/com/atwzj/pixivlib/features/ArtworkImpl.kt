@@ -2,7 +2,9 @@ package com.atwzj.pixivlib.features
 
 import com.alibaba.fastjson.JSONObject
 import com.atwzj.pixivlib.engine.Engine
+import com.atwzj.pixivlib.exception.PixivException
 import com.atwzj.pixivlib.model.Image
+import java.lang.Exception
 
 internal class ArtworkImpl(private val engine: Engine, private val id: String) :
     Artwork {
@@ -28,7 +30,11 @@ internal class ArtworkImpl(private val engine: Engine, private val id: String) :
     }
 
     private suspend fun parseInfo() {
-        val response = engine.httpGet("https://www.pixiv.net/artworks/$id")
+        val response = try {
+            engine.httpGet("https://www.pixiv.net/artworks/$id")
+        } catch (e: Exception) {
+            throw PixivException("Failed to get pixiv website", e)
+        }
 
         val jsonSrc = response.substringAfter("""<meta name="preload-data" id="meta-preload-data" content='""")
             .substringBefore("""'>""")
@@ -84,26 +90,25 @@ internal class ArtworkImpl(private val engine: Engine, private val id: String) :
             )
             this.images.add(Image(this, i, sizes))
         }
-
-    }
-
-    final override suspend fun getAuthor(): String {
-        parse()
-        return author
-    }
-
-    final override suspend fun getTitle(): String {
-        parse()
-        return title
-    }
-
-    final override suspend fun getCreateDate(): String {
-        parse()
-        return createDate
     }
 
     override suspend fun getId(): String {
         return id
+    }
+
+    override suspend fun getAuthor(): String {
+        parse()
+        return author
+    }
+
+    override suspend fun getTitle(): String {
+        parse()
+        return title
+    }
+
+    override suspend fun getCreateDate(): String {
+        parse()
+        return createDate
     }
 
     override suspend fun getDescription(): String {
@@ -111,18 +116,17 @@ internal class ArtworkImpl(private val engine: Engine, private val id: String) :
         return description
     }
 
-    final override suspend fun getPageCount(): Int {
+    override suspend fun getPageCount(): Int {
         parse()
         return pageCount
     }
 
-
-    final override suspend fun getImages(): List<Image> {
+    override suspend fun getImages(): List<Image> {
         parse()
         return images
     }
 
-    final override fun iterator(): Iterator<Image> {
+    override fun iterator(): Iterator<Image> {
         return images.iterator()
     }
 }

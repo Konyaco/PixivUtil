@@ -13,7 +13,7 @@ fun main() = runBlocking<Unit> {
     val pixiv = Pixiv<Ktor>()
     val job = GlobalScope.launch {
         println("Getting daily rank..")
-        val rank = pixiv.getRank("daily")
+        val rank = pixiv.getRank(RankMode.DAILY)
         println("Got ${rank.getArtworkCount()} artworks!") // Got 50 artworks!
         val artworks = rank.getArtworks()
 
