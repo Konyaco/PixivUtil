@@ -10,7 +10,7 @@ A engine implementation for JVM platform, uses Jetbrains Ktor library to do netw
 # Usage
 1. Import core library.
 2. Import any engine library.
-3. Use Pixiv() function to create a instance of the specified engine.
+3. Use Pixiv() function to create a instance that depends on the specified engine.
 
 Example:
 ```Kotlin
