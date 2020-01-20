@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "com.atwzj"
-version = "0.2-SNAPSHOT"
+version = "0.1-SNAPSHOT"
 
 allprojects {
     apply {
