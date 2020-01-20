@@ -28,19 +28,12 @@ class KtorEngine : Engine {
                 proxy = ProxyBuilder.http("http://127.0.0.1:1080")
             }
         }*/
-        var response = ""
         try {
-            // Try twice
-            for (i in 1..3) {
-                response = withContext(Dispatchers.IO) {
-                    httpClient.get<String>(url)
-                }
-                break
+            return withContext(Dispatchers.IO) {
+                httpClient.get<String>(url)
             }
         } catch (e: Exception) {
-//                    e.printStackTrace()
             throw PixivException("Failed to get response", e)
         }
-        return response
     }
 }
