@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSONObject
 import com.atwzj.pixivlib.engine.Engine
 import com.atwzj.pixivlib.exception.PixivException
 import com.atwzj.pixivlib.model.Image
-import java.lang.Exception
 
 internal class ArtworkImpl(private val engine: Engine, private val id: String) :
     Artwork {
@@ -15,7 +14,7 @@ internal class ArtworkImpl(private val engine: Engine, private val id: String) :
     private var createDate: String = ""
     private var pageCount: Int = -1
     private var description: String = ""
-    private val images = emptyList<Image>().toMutableList()
+    private val images = mutableListOf<Image>()
 
     private suspend fun parse() {
         if (parsed) return
@@ -48,6 +47,7 @@ internal class ArtworkImpl(private val engine: Engine, private val id: String) :
         this.title = realObject.getString("title")
         this.createDate = realObject.getString("createDate")
         this.description = realObject.getString("description")
+
 
         // 解析 image URL
         val urls = realObject.getJSONObject("urls")
@@ -124,9 +124,5 @@ internal class ArtworkImpl(private val engine: Engine, private val id: String) :
     override suspend fun getImages(): List<Image> {
         parse()
         return images
-    }
-
-    override fun iterator(): Iterator<Image> {
-        return images.iterator()
     }
 }

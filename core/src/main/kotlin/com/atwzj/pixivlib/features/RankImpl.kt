@@ -3,6 +3,7 @@ package com.atwzj.pixivlib.features
 import com.atwzj.pixivlib.engine.Engine
 import com.atwzj.pixivlib.exception.PixivException
 import org.jsoup.Jsoup
+import javax.swing.text.html.HTMLDocument
 
 internal class RankImpl(
     private val pixiv: Pixiv,
@@ -38,7 +39,6 @@ internal class RankImpl(
                     artworks.add(pixiv.getArtwork(id))
                 }
         } catch (e: Exception) {
-//            e.printStackTrace()
             throw PixivException("Failed to get the rank", e)
         }
     }

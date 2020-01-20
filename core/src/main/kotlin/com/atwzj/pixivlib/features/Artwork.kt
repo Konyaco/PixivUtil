@@ -5,7 +5,7 @@ import com.atwzj.pixivlib.model.Image
 /**
  * @throws Throws [PixivException] on failure.
  */
-interface Artwork : Iterable<Image> {
+interface Artwork {
     suspend fun getAuthor(): String
     suspend fun getTitle(): String
     suspend fun getCreateDate(): String

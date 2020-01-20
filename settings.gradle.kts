@@ -1,2 +1,2 @@
 rootProject.name = "pixivlib"
-include(":core", ":ktor")
+include(":core", ":ktor", ":jvm")

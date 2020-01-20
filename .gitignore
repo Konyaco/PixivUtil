@@ -3,5 +3,6 @@
 /build
 /core/build
 /ktor/build
+/jvm/build
 /testdata
 /.idea
