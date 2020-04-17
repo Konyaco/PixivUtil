@@ -25,7 +25,7 @@ A engine implementation for JVM platform (Expect to be multiplatform), depends o
 # Usage
 1. Import core library and its dependencies.
 2. Import any engine library and its dependencies.
-3. Use Pixiv() function to create a instance that depends on the specified engine.
+3. Use Pixiv() function to create a instance depends on the specified engine.
 
 Example:
 ```Kotlin
