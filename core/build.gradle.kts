@@ -1,15 +1,18 @@
-group = "com.atwzj"
-version = "0.1-SNAPSHOT"
-
 dependencies {
-    implementation(kotlin("reflect"))
-    implementation("org.jetbrains.kotlinx", "kotlinx-coroutines-core", "1.3.3")
-    implementation("com.alibaba", "fastjson", "1.2.62")
-    implementation("org.jsoup", "jsoup", "1.12.1")
+    api("org.jetbrains.kotlinx", "kotlinx-coroutines-core", "1.5.2")
+    api("io.ktor", "ktor-client-core", "1.6.4")
+    implementation("com.alibaba", "fastjson", "1.2.76")
+    implementation("org.jsoup", "jsoup", "1.14.3")
+
+    testImplementation(kotlin("test-junit5"))
+    testImplementation("io.ktor", "ktor-client-java", "1.6.4")
 }
 
 tasks {
     jar {
-        setProperty("archiveBaseName", "com.atwzj.pixivlib-core")
+        setProperty("archiveBaseName", "me.konyaco.pixivlib-core")
+    }
+    test {
+        useJUnitPlatform()
     }
 }
