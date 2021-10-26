@@ -31,7 +31,7 @@ object Utils {
             RankMode.MONTHLY -> {
                 SimpleDateFormat("YY-MM").format(date)
             }
-            else -> "TODO"
+            else -> error("Unknown rank")
         }
         return "${rankMode.modeName}-$ft"
     }

@@ -19,7 +19,7 @@ internal class ArtworkImplTest {
             println(art.getAuthor())
             println(art.getDescription())
             art.getImages().forEachIndexed { index, image ->
-                println("p{$index} ${image.urls}")
+                println("p${image.page} ${image.urls}")
             }
         }
     }
