@@ -6,7 +6,7 @@ import io.ktor.client.request.*
 import me.konyaco.pixivlib.exception.PixivException
 import me.konyaco.pixivlib.model.Image
 
-internal class ArtworkImpl(private val engine: HttpClient, private val id: String) :
+internal class ArtworkImpl(private val engine: HttpClient, override val id: String) :
     Artwork {
     private var parsed = false
 
@@ -103,10 +103,6 @@ internal class ArtworkImpl(private val engine: HttpClient, private val id: Strin
             )
             this.images.add(Image(this, i, sizes))
         }
-    }
-
-    override suspend fun getId(): String {
-        return id
     }
 
     override suspend fun getAuthor(): String {
