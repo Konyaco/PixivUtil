@@ -4,16 +4,15 @@ import io.ktor.client.*
 import io.ktor.client.engine.*
 import io.ktor.client.engine.java.*
 import kotlinx.cli.*
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.produce
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import me.konyaco.pixivlib.PixivFactory
-import me.konyaco.pixivlib.exception.PixivException
-import me.konyaco.pixivlib.features.Artwork
 import me.konyaco.pixivlib.features.RankMode
 import me.konyaco.pixivlib.model.Image
-import java.io.File
-import java.io.PrintStream
 
 private lateinit var httpClient: HttpClient
 
@@ -77,35 +76,97 @@ fun downloadSingleArtwork(id: String, outDir: String) = runBlocking {
 fun downloadRank(rankMode: RankMode, thread: Int) = runBlocking {
     getHttpClient()
     val downloader = Downloader(httpClient, "download/" + Utils.buildDownloadDirName(rankMode))
-
     val rank = PixivFactory.create(httpClient).getRank(rankMode)
 
     println("Getting ${rankMode.modeName} rank..")
     println("Got ${rank.getArtworkCount()} artworks!") // Got 50 artworks!
 
     val artworks = rank.getArtworks()
-    println(artworks.size)
+    var artworksChannel = produce { artworks.forEach { send(it) } }
 
-    val channels = produce<Triple<Int, Artwork, Image>> {
-        artworks.forEachIndexed { index, artwork ->
-            artwork.getImages().forEach { image ->
-                send(Triple(index, artwork, image))
+    val middleChannel = Channel<Pair<me.konyaco.pixivlib.features.Rank.RankArtwork, Image>>(Channel.UNLIMITED)
+
+    launch {
+        val failedArtworks = mutableListOf<me.konyaco.pixivlib.features.Rank.RankArtwork>()
+        val mutex = Mutex()
+
+        while (true) {
+            coroutineScope {
+                repeat(6) {
+                    launch {
+                        for (artwork in artworksChannel) {
+                            try {
+                                artwork.artwork.getImages().forEach { image ->
+                                    middleChannel.send(artwork to image)
+                                }
+                            } catch (e: Exception) {
+                                mutex.withLock { failedArtworks.add(artwork) }
+                                println("Failed to get image of ${artwork.artwork.id}: ${e.message}")
+                            }
+                        }
+                    }
+                }
+                joinAll()
+            }
+
+            if (failedArtworks.size == 0) {
+                middleChannel.close()
+            } else {
+                print("There are ${failedArtworks.size} artworks failed to resolve, try again? (Y/n) ")
+                if (readLine()?.equals("n", true) == true) {
+                    middleChannel.close()
+                    break
+                } else {
+                    val temp = mutex.withLock { failedArtworks.toList() }
+                    artworksChannel = produce { temp.forEach { send(it) } }
+                }
             }
         }
     }
 
-    repeat(thread) {
-        launch {
-            while (!channels.isClosedForReceive) {
-                val (index, artwork, image) = channels.receive()
-                val fileName = Utils.buildFileName(
-                    index,
-                    artwork.getId(),
-                    artwork.getTitle(),
-                    artwork.getAuthor(),
-                    image.page
-                )
-                downloader.download(fileName, image.urls.original)
+    var imageChannel: ReceiveChannel<Pair<me.konyaco.pixivlib.features.Rank.RankArtwork, Image>> = middleChannel
+
+    while (true) {
+        val mutex = Mutex()
+        val errorArtwork = mutableListOf<Pair<me.konyaco.pixivlib.features.Rank.RankArtwork, Image>>()
+
+        coroutineScope {
+            repeat(thread) {
+                launch {
+                    for ((item, image) in imageChannel) {
+                        try {
+                            val fileName = Utils.buildFileName(
+                                item.indexInRank,
+                                item.artwork.id,
+                                item.artwork.getTitle(),
+                                item.artwork.getAuthor(),
+                                image.page
+                            )
+                            downloader.download(fileName, image.urls.original)
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (e: Exception) {
+                            println("Download failed: ${e.message}")
+                            mutex.withLock {
+                                errorArtwork.add(item to image)
+                            }
+                        }
+                    }
+                }
+            }
+            joinAll()
+        }
+
+        if (errorArtwork.isEmpty()) {
+            println("All tasks are completed!")
+            return@runBlocking
+        } else {
+            print("There are ${errorArtwork.size} artworks haven't been downloaded, retry? (Y/n) ")
+            if (readLine()?.equals("n", true) == true) break
+            else {
+                imageChannel = produce {
+                    errorArtwork.forEach { send(it) }
+                }
             }
         }
     }

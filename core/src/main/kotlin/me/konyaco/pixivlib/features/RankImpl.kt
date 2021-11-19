@@ -16,7 +16,12 @@ internal class RankImpl(
 ) : Rank {
     private var parsed = false
 
-    private val artworks = emptyList<Artwork>().toMutableList()
+    data class RankArtworkImpl(
+        override val indexInRank: Int,
+        override val artwork: Artwork
+    ) : Rank.RankArtwork
+
+    private val artworks = mutableListOf<RankArtworkImpl>()
 
     private suspend fun parse() {
         if (parsed) return
@@ -32,7 +37,7 @@ internal class RankImpl(
     /**
      * @throws [PixivException]
      */
-    private suspend fun parseInfo()= withContext<Unit>(Dispatchers.IO) {
+    private suspend fun parseInfo() = withContext<Unit>(Dispatchers.IO) {
         val response: String = try {
             engine.get("https://www.pixiv.net/ranking.php?mode=${rankMode.modeName}")
         } catch (e: Exception) {
@@ -42,9 +47,9 @@ internal class RankImpl(
             val body = response.substringAfter("<body>").substringBefore("</body>")
             Jsoup.parse(body)
                 .getElementsByClass("ranking-item")
-                .forEach {
-                    val id = it.attr("data-id")
-                    artworks.add(pixiv.getArtwork(id))
+                .forEachIndexed { index, element ->
+                    val id = element.attr("data-id")
+                    artworks.add(RankArtworkImpl(index, pixiv.getArtwork(id)))
                 }
         } catch (e: Exception) {
             throw PixivException("Failed to parse rank website", e)
@@ -58,15 +63,15 @@ internal class RankImpl(
 
     override suspend fun getArtwork(rankIndex: Int): Artwork {
         parse()
-        return artworks[rankIndex]
+        return artworks[rankIndex].artwork
     }
 
-    override suspend fun getArtworks(): List<Artwork> {
+    override suspend fun getArtworks(): List<Rank.RankArtwork> {
         parse()
         return artworks
     }
 
-    override fun iterator(): Iterator<Artwork> {
+    override fun iterator(): Iterator<Rank.RankArtwork> {
         return artworks.iterator()
     }
 }

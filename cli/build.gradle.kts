@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "me.konyaco.pixivutil"
-version = "0.3"
+version = "0.4"
 
 repositories {
     mavenCentral()
@@ -23,6 +23,7 @@ dependencies {
 application {
     applicationName = "pixivutil"
     mainClass.set("me.konyaco.pixivutil.MainKt")
+    applicationDefaultJvmArgs += "-Djava.net.useSystemProxies=true"
 }
 
 tasks {
